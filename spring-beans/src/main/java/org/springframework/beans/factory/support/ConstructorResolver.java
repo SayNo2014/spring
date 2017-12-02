@@ -371,6 +371,8 @@ class ConstructorResolver {
 			final String beanName, final RootBeanDefinition mbd, @Nullable final Object[] explicitArgs) {
 
 		BeanWrapperImpl bw = new BeanWrapperImpl();
+		// 设置属性的全局转换器
+		// 注册自定义编辑器
 		this.beanFactory.initBeanWrapper(bw);
 
 		Object factoryBean;
