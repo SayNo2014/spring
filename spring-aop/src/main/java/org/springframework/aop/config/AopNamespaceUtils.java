@@ -73,19 +73,29 @@ public abstract class AopNamespaceUtils {
 
 	public static void registerAspectJAnnotationAutoProxyCreatorIfNecessary(
 			ParserContext parserContext, Element sourceElement) {
-
+		// 获取默认自动代码构造器
 		BeanDefinition beanDefinition = AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(
 				parserContext.getRegistry(), parserContext.extractSource(sourceElement));
+		// proxy-target-class 以及 expose-proxy 属性的处理
 		useClassProxyingIfNecessary(parserContext.getRegistry(), sourceElement);
+		// 注册组件并通知
 		registerComponentIfNecessary(beanDefinition, parserContext);
 	}
 
 	private static void useClassProxyingIfNecessary(BeanDefinitionRegistry registry, @Nullable Element sourceElement) {
 		if (sourceElement != null) {
+			// proxy-target-class: 强调spring 应该使用那种代理方式：JDK动态代理和CGLIB
+			// 默认采用的JDK动态代理
+			// 若使用CGLIB,由于CGLIB采用的方式是集成目标类,无法增强final方法,需要手动添加CGLIB发行包到ClassPath
 			boolean proxyTargetClass = Boolean.valueOf(sourceElement.getAttribute(PROXY_TARGET_CLASS_ATTRIBUTE));
 			if (proxyTargetClass) {
 				AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
 			}
+			// 目标对象内部的自我调用将无法实施切面中的增强
+			// public void methodA() {this.methodB()}
+			// public void methodB() {}
+			// expose-proxy为true时可以对methodA中调用的methodB进行增强
+			// ((AService)AopContext.currentProxy()).methodB
 			boolean exposeProxy = Boolean.valueOf(sourceElement.getAttribute(EXPOSE_PROXY_ATTRIBUTE));
 			if (exposeProxy) {
 				AopConfigUtils.forceAutoProxyCreatorToExposeProxy(registry);
