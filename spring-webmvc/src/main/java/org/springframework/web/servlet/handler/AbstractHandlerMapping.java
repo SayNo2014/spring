@@ -76,6 +76,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 
 	private PathMatcher pathMatcher = new AntPathMatcher();
 
+	// 用于配置Spring MVC 拦截器
 	private final List<Object> interceptors = new ArrayList<>();
 
 	private final List<HandlerInterceptor> adaptedInterceptors = new ArrayList<>();
@@ -239,8 +240,11 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 */
 	@Override
 	protected void initApplicationContext() throws BeansException {
+		// 增加修改拦截器（interceptors）
 		extendInterceptors(this.interceptors);
+		// 将Spring MVC容器和Spring容器中的所有MappingInterceptor类型的bean添加到mappedInterceptors
 		detectMappedInterceptors(this.adaptedInterceptors);
+		// 初始化Interceptors
 		initInterceptors();
 	}
 
@@ -348,20 +352,24 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		// 1. 获取handler
 		Object handler = getHandlerInternal(request);
+		// 若1中没找到handler使用默认的handler
 		if (handler == null) {
 			handler = getDefaultHandler();
 		}
 		if (handler == null) {
 			return null;
 		}
-		// Bean name or resolved handler?
+		// 若获取的handler为beanName则从Spring MVC和Spring 容器中获取
 		if (handler instanceof String) {
 			String handlerName = (String) handler;
 			handler = obtainApplicationContext().getBean(handlerName);
 		}
 
+		// 创建处理器和拦截器执行链
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
+		// 如果是CORS（跨域资源共享）请求
 		if (CorsUtils.isCorsRequest(request)) {
 			CorsConfiguration globalConfig = this.globalCorsConfigSource.getCorsConfiguration(request);
 			CorsConfiguration handlerConfig = getCorsConfiguration(handler, request);

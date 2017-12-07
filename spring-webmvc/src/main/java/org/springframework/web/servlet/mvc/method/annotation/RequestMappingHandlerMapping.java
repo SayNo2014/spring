@@ -189,8 +189,10 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	@Override
 	@Nullable
 	protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
+		// 装载请求处理方法的配置信息
 		RequestMappingInfo info = createRequestMappingInfo(method);
 		if (info != null) {
+			// 判断class上是否配置了requestMapping,若配置需要合并
 			RequestMappingInfo typeInfo = createRequestMappingInfo(handlerType);
 			if (typeInfo != null) {
 				info = typeInfo.combine(info);

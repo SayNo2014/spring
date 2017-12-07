@@ -65,6 +65,7 @@ public class SimpleUrlHandlerMapping extends AbstractUrlHandlerMapping {
 	 * @see #setUrlMap
 	 */
 	public void setMappings(Properties mappings) {
+		// 通过mappings属性注册handler
 		CollectionUtils.mergePropertiesIntoMap(mappings, this.urlMap);
 	}
 
@@ -77,6 +78,7 @@ public class SimpleUrlHandlerMapping extends AbstractUrlHandlerMapping {
 	 * @see #setMappings
 	 */
 	public void setUrlMap(Map<String, ?> urlMap) {
+		// 通过urlMap属性注册handler
 		this.urlMap.putAll(urlMap);
 	}
 

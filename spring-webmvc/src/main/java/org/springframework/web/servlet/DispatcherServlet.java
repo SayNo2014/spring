@@ -486,9 +486,9 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * This implementation calls {@link #initStrategies}.
 	 */
 	@Override
-protected void onRefresh(ApplicationContext context) {
-	initStrategies(context);
-}
+	protected void onRefresh(ApplicationContext context) {
+		initStrategies(context);
+	}
 
 	/**
 	 * Initialize the strategy objects that this servlet uses.
@@ -1210,12 +1210,14 @@ protected void onRefresh(ApplicationContext context) {
 	 */
 	@Nullable
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		// 根据请求获取对应的处理器链
 		if (this.handlerMappings != null) {
 			for (HandlerMapping hm : this.handlerMappings) {
 				if (logger.isTraceEnabled()) {
 					logger.trace(
 							"Testing handler map [" + hm + "] in DispatcherServlet with name '" + getServletName() + "'");
 				}
+				// 调用 HandlerMapping#getHandler方法获取HandlerExecutionChain
 				HandlerExecutionChain handler = hm.getHandler(request);
 				if (handler != null) {
 					return handler;

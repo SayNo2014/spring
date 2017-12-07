@@ -56,18 +56,25 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 	@Nullable
 	private final String name;
 
+	// 模式请求路径过滤对象
 	private final PatternsRequestCondition patternsCondition;
 
+	// 请求方法过滤对象
 	private final RequestMethodsRequestCondition methodsCondition;
 
+	// 请求参数过滤对象
 	private final ParamsRequestCondition paramsCondition;
 
+	// 请求头参数过滤对象
 	private final HeadersRequestCondition headersCondition;
 
+	// 请求内容类型过滤对象
 	private final ConsumesRequestCondition consumesCondition;
 
+	// 应答内容过滤对象
 	private final ProducesRequestCondition producesCondition;
 
+	// 自定义过滤对象
 	private final RequestConditionHolder customConditionHolder;
 
 
