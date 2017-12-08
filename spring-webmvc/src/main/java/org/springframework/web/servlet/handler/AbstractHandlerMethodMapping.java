@@ -387,6 +387,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		for (T mapping : mappings) {
 			T match = getMatchingMapping(mapping, request);
 			if (match != null) {
+				
+				
+				
 				matches.add(new Match(match, this.mappingRegistry.getMappings().get(mapping)));
 			}
 		}
@@ -602,22 +605,22 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			if (oldList == null) {
 				oldList = Collections.emptyList();
 			}
-
+		
 			for (HandlerMethod current : oldList) {
 				if (handlerMethod.equals(current)) {
 					return;
 				}
 			}
-
+		
 			if (logger.isTraceEnabled()) {
 				logger.trace("Mapping name '" + name + "'");
 			}
-
+		
 			List<HandlerMethod> newList = new ArrayList<>(oldList.size() + 1);
 			newList.addAll(oldList);
 			newList.add(handlerMethod);
 			this.nameLookup.put(name, newList);
-
+		
 			if (newList.size() > 1) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Mapping name clash for handlerMethods " + newList +

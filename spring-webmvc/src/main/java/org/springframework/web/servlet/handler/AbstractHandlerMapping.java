@@ -242,7 +242,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	protected void initApplicationContext() throws BeansException {
 		// 增加修改拦截器（interceptors）
 		extendInterceptors(this.interceptors);
-		// 将Spring MVC容器和Spring容器中的所有MappingInterceptor类型的bean添加到mappedInterceptors
+		// 将Spring MVC容器的所有MappingInterceptor类型的bean添加到mappedInterceptors
 		detectMappedInterceptors(this.adaptedInterceptors);
 		// 初始化Interceptors
 		initInterceptors();
