@@ -890,6 +890,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			throws ServletException, IOException {
 
 		HttpMethod httpMethod = HttpMethod.resolve(request.getMethod());
+		// PATCH 新增method,对于局部更新的支持
 		if (HttpMethod.PATCH == httpMethod || httpMethod == null) {
 			processRequest(request, response);
 		}
@@ -1009,12 +1010,14 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
 		// 获取当前请求的LocalContext
 		LocaleContext localeContext = buildLocaleContext(request);
-		// 获取RequestContextHolder中保存的RequestAttributes
+		// 获取RequestContextHolder中保存的
+
 		// RequestAttributes是Spring的一个接口，可以根据scope参数判断操作request还是session 
 		RequestAttributes previousAttributes = RequestContextHolder.getRequestAttributes();
 		// 获取当前请求的ServletRequestAttributes
 		ServletRequestAttributes requestAttributes = buildRequestAttributes(request, response, previousAttributes);
 
+		// 异步处理管理器并设置了拦截器
 		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
 		asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
 

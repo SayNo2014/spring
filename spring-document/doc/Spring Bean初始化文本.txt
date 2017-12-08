@@ -1,0 +1,64 @@
+﻿创建单例bean A
+org.springframework.beans.factory.support.DefaultListableBeanFactory#preInstantiateSingletons
+--> 初始化非懒加载的单例bean
+org.springframework.beans.factory.support.AbstractBeanFactory#getMergedLocalBeanDefinition
+--> 获取RootBeanDefinition
+org.springframework.beans.factory.support.AbstractBeanFactory#getBean
+org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean
+org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton
+--> (beanName,allowEarlyReference-->true)
+org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton
+--> 缓存中获取单例bean,首次访问,singletonObjects-->null,singletonsCurrentlyInCreation--> null
+org.springframework.beans.factory.support.AbstractBeanFactory#markBeanAsCreated
+--> 标记beanName已经创建（alreadyCreated）
+org.springframework.beans.factory.support.AbstractBeanFactory#getMergedLocalBeanDefinition
+--> 再次通过BeanDefinition获取RootBeanDefinition
+-->这里再次调用getMergedLocalBeanDefinition获取RootBeanDefinition是因为后置处理器可能对BeanDefinition做了修改
+org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton
+org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#beforeSingletonCreation
+--> beanName保存到singletonsCurrentlyInCreation
+org.springframework.beans.factory.support.AbstractBeanFactory#getObject
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean
+--> 为啥会调用这个方法,可查看类图
+org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation
+--> bean实例化前
+-->若在postProcessBeforeInstantiation方法中直接返回了bean,则直接调用postProcessAfterInitialization,然后直接返回bean
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#doCreateBean
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBeanInstance
+--> [工厂方法,构造函数注入构造,默认构造函数]
+org.springframework.beans.factory.support.AbstractBeanFactory#initBeanWrapper
+--> [设置类型转换器和属性编辑器]
+org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition
+--> [bean实例化后,曾然可以改变RootBeanDefinition]
+org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#addSingletonFactory
+--> [将ObjectFactory#singletonFactory保存到singletonFactories,beanName保存到registeredSingletons,
+--> earlySingletonObjects删除beanName,这里暴露的是singletonFactory用于获取实例bean
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean
+--> [填充属性]
+org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor#postProcessAfterInstantiation
+--> InstantiationAwareBeanPostProcessors填充属性前最后一次修改bean,若返回false,不进行属性填充,直接返回该bean
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#autowireByName
+--> [根据name自动填充初始化MutablePropertyValues]
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#autowireByType
+--> [根据type自动填充初始化MutablePropertyValues]
+org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor#postProcessPropertyValues
+--> [pvs为null,不进行填充,直接返回,该方法可用于属性的校验]
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyPropertyValues
+--> [填充属性]
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#initializeBean
+--> [初始化bean]
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#invokeAwareMethods
+--> [调用AwareMethod]
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyBeanPostProcessorsBeforeInitialization
+--> [BeanPostProcessor#postProcessBeforeInitialization]
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#invokeInitMethods[init-method]
+org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyBeanPostProcessorsAfterInitialization
+--> [BeanPostProcessor#postProcessAfterInitialization]
+
+
+
+
+
+
+
+

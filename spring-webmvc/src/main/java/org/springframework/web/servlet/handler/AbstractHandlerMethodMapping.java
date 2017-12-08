@@ -209,16 +209,17 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 					beanType = obtainApplicationContext().getType(beanName);
 				}
 				catch (Throwable ex) {
-					// An unresolvable bean type, probably from a lazy bean - let's ignore it.
 					if (logger.isDebugEnabled()) {
 						logger.debug("Could not resolve target class for bean with name '" + beanName + "'", ex);
 					}
 				}
+				// 注册HandlerMethod
 				if (beanType != null && isHandler(beanType)) {
 					detectHandlerMethods(beanName);
 				}
 			}
 		}
+		// 模板方法
 		handlerMethodsInitialized(getHandlerMethods());
 	}
 
@@ -229,7 +230,6 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	protected void detectHandlerMethods(final Object handler) {
 		Class<?> handlerType = (handler instanceof String ?
 				obtainApplicationContext().getType((String) handler) : handler.getClass());
-
 		if (handlerType != null) {
 			final Class<?> userType = ClassUtils.getUserClass(handlerType);
 			Map<Method, T> methods = MethodIntrospector.selectMethods(userType,
@@ -341,7 +341,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 */
 	@Nullable
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
+		// Match 内部类,保存匹配条件和handler
 		List<Match> matches = new ArrayList<>();
+		// 根据lookupPath获取匹配条件
 		List<T> directPathMatches = this.mappingRegistry.getMappingsByUrl(lookupPath);
 		if (directPathMatches != null) {
 			addMatchingMappings(directPathMatches, matches, request);
@@ -364,6 +366,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 					return PREFLIGHT_AMBIGUOUS_MATCH;
 				}
 				Match secondBestMatch = matches.get(1);
+				// 若存在两个bestMatch,抛出异常
 				if (comparator.compare(bestMatch, secondBestMatch) == 0) {
 					Method m1 = bestMatch.handlerMethod.getMethod();
 					Method m2 = secondBestMatch.handlerMethod.getMethod();
@@ -371,6 +374,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 							request.getRequestURL() + "': {" + m1 + ", " + m2 + "}");
 				}
 			}
+			// 将lookupPath保存到request
 			handleMatch(bestMatch.mapping, lookupPath, request);
 			return bestMatch.handlerMethod;
 		}
@@ -383,6 +387,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		for (T mapping : mappings) {
 			T match = getMatchingMapping(mapping, request);
 			if (match != null) {
+				
+				
+				
 				matches.add(new Match(match, this.mappingRegistry.getMappings().get(mapping)));
 			}
 		}
@@ -598,22 +605,22 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			if (oldList == null) {
 				oldList = Collections.emptyList();
 			}
-
+		
 			for (HandlerMethod current : oldList) {
 				if (handlerMethod.equals(current)) {
 					return;
 				}
 			}
-
+		
 			if (logger.isTraceEnabled()) {
 				logger.trace("Mapping name '" + name + "'");
 			}
-
+		
 			List<HandlerMethod> newList = new ArrayList<>(oldList.size() + 1);
 			newList.addAll(oldList);
 			newList.add(handlerMethod);
 			this.nameLookup.put(name, newList);
-
+		
 			if (newList.size() > 1) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Mapping name clash for handlerMethods " + newList +

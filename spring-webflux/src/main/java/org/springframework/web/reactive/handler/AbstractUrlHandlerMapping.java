@@ -192,11 +192,13 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping {
 		Assert.notNull(handler, "Handler object must not be null");
 		Object resolvedHandler = handler;
 
-		// Parse path pattern
+		// 解析 path pattern
+		// sayno.win --> /sayno.win
 		urlPath = prependLeadingSlash(urlPath);
 		PathPattern pattern = getPathPatternParser().parse(urlPath);
 		if (this.handlerMap.containsKey(pattern)) {
 			Object existingHandler = this.handlerMap.get(pattern);
+			// 相同url pattern 匹配多个handler,则抛出异常
 			if (existingHandler != null) {
 				if (existingHandler != resolvedHandler) {
 					throw new IllegalStateException(
@@ -206,7 +208,7 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping {
 			}
 		}
 
-		// Eagerly resolve handler if referencing singleton via name.
+		// 非懒加载的bean,直接获取bean然后注册handler
 		if (!this.lazyInitHandlers && handler instanceof String) {
 			String handlerName = (String) handler;
 			if (obtainApplicationContext().isSingleton(handlerName)) {
@@ -214,7 +216,7 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping {
 			}
 		}
 
-		// Register resolved handler
+		// 注册解析后的handler
 		this.handlerMap.put(pattern, resolvedHandler);
 		if (logger.isInfoEnabled()) {
 			logger.info("Mapped URL path [" + urlPath + "] onto " + getHandlerDescription(handler));
