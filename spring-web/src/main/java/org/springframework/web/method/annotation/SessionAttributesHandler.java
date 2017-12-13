@@ -49,12 +49,19 @@ import org.springframework.web.context.request.WebRequest;
  */
 public class SessionAttributesHandler {
 
+	// 存储@SessionAttribute注解里value的值
 	private final Set<String> attributeNames = new HashSet<>();
 
+	// 存储@SessionAttribute注解里type的值
 	private final Set<Class<?>> attributeTypes = new HashSet<>();
 
+	// 存储所有已知可以被当前处理器处理的属性名
+	// 1.构造函数中将attributeNames值设置到了knownAttributeNames
+	// 2.isHandlerSessionAttribute方法时会将符合条件的值保存到knownAttributeNames
+	// knownAttributeNames保存了除了value配置的属性名还有types配置的已经被保存完的属性名
 	private final Set<String> knownAttributeNames = Collections.newSetFromMap(new ConcurrentHashMap<>(4));
 
+	// 用于保存Session数据的工具类
 	private final SessionAttributeStore sessionAttributeStore;
 
 

@@ -105,13 +105,17 @@ public final class ModelFactory {
 	 */
 	public void initModel(NativeWebRequest request, ModelAndViewContainer container,
 			HandlerMethod handlerMethod) throws Exception {
-
+		// 从Session中获取保存的数据
 		Map<String, ?> sessionAttributes = this.sessionAttributesHandler.retrieveAttributes(request);
+		// 将数据合并到container中
 		container.mergeAttributes(sessionAttributes);
+		// 执行了注解了ModelAttribute的方法
 		invokeModelAttributeMethods(request, container);
 
+		// 遍历既注释了ModelAttribute也注释了SessionAttribute的参数
 		for (String name : findSessionAttributeArguments(handlerMethod)) {
 			if (!container.containsAttribute(name)) {
+				// 获取sessionAttributeStore中保存的参数名与name一致的参数值
 				Object value = this.sessionAttributesHandler.retrieveAttribute(request, name);
 				if (value == null) {
 					throw new HttpSessionRequiredException("Expected session attribute '" + name + "'", name);
@@ -129,9 +133,11 @@ public final class ModelFactory {
 			throws Exception {
 
 		while (!this.modelMethods.isEmpty()) {
+			// 获取注解了@ModelAttribute的方法
 			InvocableHandlerMethod modelMethod = getNextModelMethod(container).getHandlerMethod();
 			ModelAttribute ann = modelMethod.getMethodAnnotation(ModelAttribute.class);
 			Assert.state(ann != null, "No ModelAttribute annotation");
+			// 如果参数已经绑定过不需要绑定
 			if (container.containsAttribute(ann.name())) {
 				if (!ann.binding()) {
 					container.setBindingDisabled(ann.name());
@@ -139,7 +145,10 @@ public final class ModelFactory {
 				continue;
 			}
 
+			// 执行@ModelAttribute注解的方法
 			Object returnValue = modelMethod.invokeForRequest(request, container);
+			// 如果返回参数为void代表方法自己讲参数设置到container中,不需要特殊处理
+			// 如果返回参数不为void获取注解中设置的属性名，以注解中的name为key,返回值为value保存到container中
 			if (!modelMethod.isVoid()){
 				String returnValueName = getNameForReturnValue(returnValue, modelMethod.getReturnType());
 				if (!ann.binding()) {

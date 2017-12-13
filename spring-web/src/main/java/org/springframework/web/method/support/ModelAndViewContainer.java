@@ -29,35 +29,27 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.bind.support.SimpleSessionStatus;
 
 /**
- * Records model and view related decisions made by
- * {@link HandlerMethodArgumentResolver}s and
- * {@link HandlerMethodReturnValueHandler}s during the course of invocation of
- * a controller method.
- *
- * <p>The {@link #setRequestHandled} flag can be used to indicate the request
- * has been handled directly and view resolution is not required.
- *
- * <p>A default {@link Model} is automatically created at instantiation.
- * An alternate model instance may be provided via {@link #setRedirectModel}
- * for use in a redirect scenario. When {@link #setRedirectModelScenario} is set
- * to {@code true} signalling a redirect scenario, the {@link #getModel()}
- * returns the redirect model instead of the default model.
- *
- * @author Rossen Stoyanchev
- * @since 3.1
+ * 承担着整个请求过程中数据的传递工作,它除了保存Model和View外还有一些别的功能
+ * 
+ * @author 94ish
+ * @since 5.0
  */
 public class ModelAndViewContainer {
 
 	private boolean ignoreDefaultModelOnRedirect = false;
 
+	// 视图
 	@Nullable
 	private Object view;
 
+	// 默认使用的Model
 	private final ModelMap defaultModel = new BindingAwareModelMap();
 
+	// 重定向使用的Model
 	@Nullable
 	private ModelMap redirectModel;
 
+	// 处理器返回redirect视图的标志
 	private boolean redirectModelScenario = false;
 
 	/* Names of attributes with binding disabled */
@@ -66,8 +58,10 @@ public class ModelAndViewContainer {
 	@Nullable
 	private HttpStatus status;
 
+	// 用于设置sessionAttribute使用完的标志
 	private final SessionStatus sessionStatus = new SimpleSessionStatus();
 
+	// 请求是否处理完成的标志
 	private boolean requestHandled = false;
 
 
