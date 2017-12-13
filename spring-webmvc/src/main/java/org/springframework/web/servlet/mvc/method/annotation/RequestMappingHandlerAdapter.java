@@ -116,21 +116,27 @@ import org.springframework.web.util.WebUtils;
 public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		implements BeanFactoryAware, InitializingBean {
 
+	// ×Ô¶¨Òå²ÎÊı½âÎöÆ÷
 	@Nullable
 	private List<HandlerMethodArgumentResolver> customArgumentResolvers;
 
+	// »ìºÏ²ÎÊı½âÎöÆ÷
 	@Nullable
 	private HandlerMethodArgumentResolverComposite argumentResolvers;
 
+	// ²ÎÊı°ó¶¨½âÎöÆ÷
 	@Nullable
 	private HandlerMethodArgumentResolverComposite initBinderArgumentResolvers;
 
+	// ×Ô¶¨Òå·µ»ØÖµ´¦ÀíÆ÷
 	@Nullable
 	private List<HandlerMethodReturnValueHandler> customReturnValueHandlers;
 
+	// »ìºÏ·µ»ØÖµ´¦ÀíÆ÷
 	@Nullable
 	private HandlerMethodReturnValueHandlerComposite returnValueHandlers;
 
+	// modelAndView½âÎöÆ÷
 	@Nullable
 	private List<ModelAndViewResolver> modelAndViewResolvers;
 
@@ -138,6 +144,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 
 	private List<HttpMessageConverter<?>> messageConverters;
 
+	// ÓÃÓÚ±£´æResponseBodyAdvice,¿ÉÒÔĞŞ¸Ä·µ»ØµÄResponseBody
 	private List<Object> requestResponseBodyAdvice = new ArrayList<>();
 
 	@Nullable
@@ -174,8 +181,10 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 
 	private final Map<ControllerAdviceBean, Set<Method>> initBinderAdviceCache = new LinkedHashMap<>();
 
+	// modelAttributeCache»º´æ
 	private final Map<Class<?>, Set<Method>> modelAttributeCache = new ConcurrentHashMap<>(64);
 
+	// modelAttributeAdviceCache»º´æ
 	private final Map<ControllerAdviceBean, Set<Method>> modelAttributeAdviceCache = new LinkedHashMap<>();
 
 
@@ -543,22 +552,22 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 
 	@Override
 	public void afterPropertiesSet() {
-		// åˆå§‹åŒ–æ³¨è§£äº†@ControllerAdviceçš„ç±»çš„ç›¸å…³å±æ€§
+		// ³õÊ¼»¯×¢½âÁË@ControllerAdviceµÄÀàµÄÏà¹ØÊôĞÔ
 		initControllerAdviceCache();
 
-		// argumentResolvers ç”¨äºç»™å¤„ç†å™¨æ–¹æ³•å’Œæ³¨è§£äº†@ModelAttributeçš„æ–¹æ³•è®¾ç½®å‚æ•°
+		// argumentResolvers ÓÃÓÚ¸ø´¦ÀíÆ÷·½·¨ºÍ×¢½âÁË@ModelAttributeµÄ·½·¨ÉèÖÃ²ÎÊı
 		if (this.argumentResolvers == null) {
 			List<HandlerMethodArgumentResolver> resolvers = getDefaultArgumentResolvers();
 			this.argumentResolvers = new HandlerMethodArgumentResolverComposite().addResolvers(resolvers);
 		}
 		
-		// initBinderArgumentResolvers ç”¨äºç»™æ³¨è§£äº†@InitBinderçš„æ–¹æ³•è®¾ç½®å‚æ•°
+		// initBinderArgumentResolvers ÓÃÓÚ¸ø×¢½âÁË@InitBinderµÄ·½·¨ÉèÖÃ²ÎÊı
 		if (this.initBinderArgumentResolvers == null) {
 			List<HandlerMethodArgumentResolver> resolvers = getDefaultInitBinderArgumentResolvers();
 			this.initBinderArgumentResolvers = new HandlerMethodArgumentResolverComposite().addResolvers(resolvers);
 		}
 		
-		// returnValueHandlers ç”¨äºå°†å¤„ç†å™¨çš„è¿”å›å€¼å¤„ç†æˆModelAndViewçš„ç±»å‹
+		// returnValueHandlers ÓÃÓÚ½«´¦ÀíÆ÷µÄ·µ»ØÖµ´¦Àí³ÉModelAndViewµÄÀàĞÍ
 		if (this.returnValueHandlers == null) {
 			List<HandlerMethodReturnValueHandler> handlers = getDefaultReturnValueHandlers();
 			this.returnValueHandlers = new HandlerMethodReturnValueHandlerComposite().addHandlers(handlers);
@@ -573,9 +582,9 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			logger.info("Looking for @ControllerAdvice: " + getApplicationContext());
 		}
 
-		// è·å–æ‰€æœ‰æ³¨è§£äº†@ControllerAdviceBean#bean
+		// »ñÈ¡ËùÓĞ×¢½âÁË@ControllerAdviceBean#bean
 		List<ControllerAdviceBean> adviceBeans = ControllerAdviceBean.findAnnotatedBeans(getApplicationContext());
-		// æ ¹æ®æ³¨è§£çš„Orderæ’åº
+		// ¸ù¾İ×¢½âµÄOrderÅÅĞò
 		AnnotationAwareOrderComparator.sort(adviceBeans);
 
 		List<Object> requestResponseBodyAdviceBeans = new ArrayList<>();
@@ -586,37 +595,37 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				throw new IllegalStateException("Unresolvable type for ControllerAdviceBean: " + adviceBean);
 			}
 			
-			// æŸ¥æ‰¾æ³¨è§£@ModelAttribute&&æ²¡æœ‰æ³¨è§£RequestMappingçš„æ–¹æ³•
+			// ²éÕÒ×¢½â@ModelAttribute&&Ã»ÓĞ×¢½âRequestMappingµÄ·½·¨
 			Set<Method> attrMethods = MethodIntrospector.selectMethods(beanType, MODEL_ATTRIBUTE_METHODS);
 			if (!attrMethods.isEmpty()) {
-				// å°†æŸ¥æ‰¾åˆ°çš„æ–¹æ³•ä¿å­˜åˆ°modelAttributeAdviceCache
+				// ½«²éÕÒµ½µÄ·½·¨±£´æµ½modelAttributeAdviceCache
 				this.modelAttributeAdviceCache.put(adviceBean, attrMethods);
 				if (logger.isInfoEnabled()) {
 					logger.info("Detected @ModelAttribute methods in " + adviceBean);
 				}
 			}
 			
-			// æŸ¥æ‰¾æ³¨è§£@InitBinderæ³¨è§£çš„æ–¹æ³•
+			// ²éÕÒ×¢½â@InitBinder×¢½âµÄ·½·¨
 			Set<Method> binderMethods = MethodIntrospector.selectMethods(beanType, INIT_BINDER_METHODS);
 			if (!binderMethods.isEmpty()) {
-				// å°†æŸ¥æ‰¾åˆ°çš„æ–¹æ³•ä¿å­˜åˆ°initBinderAdviceCache
+				// ½«²éÕÒµ½µÄ·½·¨±£´æµ½initBinderAdviceCache
 				this.initBinderAdviceCache.put(adviceBean, binderMethods);
 				if (logger.isInfoEnabled()) {
 					logger.info("Detected @InitBinder methods in " + adviceBean);
 				}
 			}
-			// åˆ¤æ–­å½“å‰beanæ˜¯å¦å®ç°äº†RequestBodyAdviceæ¥å£
+			// ÅĞ¶Ïµ±Ç°beanÊÇ·ñÊµÏÖÁËRequestBodyAdvice½Ó¿Ú
 			if (RequestBodyAdvice.class.isAssignableFrom(beanType)) {
-				// å®ç°äº†RequestBodyAdviceæ¥å£çš„beanä¿å­˜åˆ°requestResponseBodyAdviceBeans
+				// ÊµÏÖÁËRequestBodyAdvice½Ó¿ÚµÄbean±£´æµ½requestResponseBodyAdviceBeans
 				requestResponseBodyAdviceBeans.add(adviceBean);
 				if (logger.isInfoEnabled()) {
 					logger.info("Detected RequestBodyAdvice bean in " + adviceBean);
 				}
 			}
 			
-			// åˆ¤æ–­å½“å‰beanæ˜¯å¦å®ç°äº†ResponseBodyAdviceæ¥å£
+			// ÅĞ¶Ïµ±Ç°beanÊÇ·ñÊµÏÖÁËResponseBodyAdvice½Ó¿Ú
 			if (ResponseBodyAdvice.class.isAssignableFrom(beanType)) {
-				// å®ç°äº†ResponseBodyAdviceæ¥å£çš„beanä¿å­˜åˆ°requestResponseBodyAdviceBeans
+				// ÊµÏÖÁËResponseBodyAdvice½Ó¿ÚµÄbean±£´æµ½requestResponseBodyAdviceBeans
 				requestResponseBodyAdviceBeans.add(adviceBean);
 				if (logger.isInfoEnabled()) {
 					logger.info("Detected ResponseBodyAdvice bean in " + adviceBean);
@@ -625,7 +634,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		}
 
 		if (!requestResponseBodyAdviceBeans.isEmpty()) {
-			// æœ€åå°†æŸ¥æ‰¾åˆ°çš„requestResponseBodyAdviceBeansä¿å­˜åˆ°this#requestResponseBodyAdvice
+			// ×îºó½«²éÕÒµ½µÄrequestResponseBodyAdviceBeans±£´æµ½this#requestResponseBodyAdvice
 			this.requestResponseBodyAdvice.addAll(0, requestResponseBodyAdviceBeans);
 		}
 	}
@@ -637,7 +646,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	private List<HandlerMethodArgumentResolver> getDefaultArgumentResolvers() {
 		List<HandlerMethodArgumentResolver> resolvers = new ArrayList<>();
 
-		// æ·»åŠ åŸºäºæ³¨è§£çš„å‚æ•°è§£æå™¨
+		// Ìí¼Ó»ùÓÚ×¢½âµÄ²ÎÊı½âÎöÆ÷
 		resolvers.add(new RequestParamMethodArgumentResolver(getBeanFactory(), false));
 		resolvers.add(new RequestParamMapMethodArgumentResolver());
 		resolvers.add(new PathVariableMethodArgumentResolver());
@@ -654,7 +663,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		resolvers.add(new SessionAttributeMethodArgumentResolver());
 		resolvers.add(new RequestAttributeMethodArgumentResolver());
 
-		// æ·»åŠ åŸºäºç±»å‹çš„å‚æ•°è§£æå™¨
+		// Ìí¼Ó»ùÓÚÀàĞÍµÄ²ÎÊı½âÎöÆ÷
 		resolvers.add(new ServletRequestMethodArgumentResolver());
 		resolvers.add(new ServletResponseMethodArgumentResolver());
 		resolvers.add(new HttpEntityMethodProcessor(getMessageConverters(), this.requestResponseBodyAdvice));
@@ -665,12 +674,12 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		resolvers.add(new SessionStatusMethodArgumentResolver());
 		resolvers.add(new UriComponentsBuilderMethodArgumentResolver());
 
-		// æ·»åŠ è‡ªå®šä¹‰å‚æ•°è§£æå™¨
+		// Ìí¼Ó×Ô¶¨Òå²ÎÊı½âÎöÆ÷
 		if (getCustomArgumentResolvers() != null) {
 			resolvers.addAll(getCustomArgumentResolvers());
 		}
 
-		// æ·»åŠ å¯ä»¥è§£ææ‰€æœ‰ç±»å‹çš„å‚æ•°è§£æå™¨
+		// Ìí¼Ó¿ÉÒÔ½âÎöËùÓĞÀàĞÍµÄ²ÎÊı½âÎöÆ÷
 		resolvers.add(new RequestParamMethodArgumentResolver(getBeanFactory(), true));
 		resolvers.add(new ServletModelAttributeMethodProcessor(true));
 
@@ -684,7 +693,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	private List<HandlerMethodArgumentResolver> getDefaultInitBinderArgumentResolvers() {
 		List<HandlerMethodArgumentResolver> resolvers = new ArrayList<>();
 
-		// æ·»åŠ åŸºäºæ³¨è§£çš„å‚æ•°è§£æå™¨
+		// Ìí¼Ó»ùÓÚ×¢½âµÄ²ÎÊı½âÎöÆ÷
 		resolvers.add(new RequestParamMethodArgumentResolver(getBeanFactory(), false));
 		resolvers.add(new RequestParamMapMethodArgumentResolver());
 		resolvers.add(new PathVariableMethodArgumentResolver());
@@ -695,16 +704,16 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		resolvers.add(new SessionAttributeMethodArgumentResolver());
 		resolvers.add(new RequestAttributeMethodArgumentResolver());
 
-		// æ·»åŠ åŸºäºç±»å‹çš„å‚æ•°è§£æå™¨
+		// Ìí¼Ó»ùÓÚÀàĞÍµÄ²ÎÊı½âÎöÆ÷
 		resolvers.add(new ServletRequestMethodArgumentResolver());
 		resolvers.add(new ServletResponseMethodArgumentResolver());
 
-		// æ·»åŠ è‡ªå®šä¹‰å‚æ•°è§£æå™¨
+		// Ìí¼Ó×Ô¶¨Òå²ÎÊı½âÎöÆ÷
 		if (getCustomArgumentResolvers() != null) {
 			resolvers.addAll(getCustomArgumentResolvers());
 		}
 
-		// æ·»åŠ å¯ä»¥è§£ææ‰€æœ‰ç±»å‹çš„å‚æ•°è§£æå™¨
+		// Ìí¼Ó¿ÉÒÔ½âÎöËùÓĞÀàĞÍµÄ²ÎÊı½âÎöÆ÷
 		resolvers.add(new RequestParamMethodArgumentResolver(getBeanFactory(), true));
 
 		return resolvers;
@@ -740,12 +749,12 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		handlers.add(new ViewNameMethodReturnValueHandler());
 		handlers.add(new MapMethodProcessor());
 
-		// æ·»åŠ è‡ªå®šä¹‰å‚æ•°è§£æå™¨
+		// Ìí¼Ó×Ô¶¨Òå²ÎÊı½âÎöÆ÷
 		if (getCustomReturnValueHandlers() != null) {
 			handlers.addAll(getCustomReturnValueHandlers());
 		}
 
-		// æ·»åŠ å¯ä»¥è§£ææ‰€æœ‰ç±»å‹çš„å‚æ•°è§£æå™¨
+		// Ìí¼Ó¿ÉÒÔ½âÎöËùÓĞÀàĞÍµÄ²ÎÊı½âÎöÆ÷
 		if (!CollectionUtils.isEmpty(getModelAndViewResolvers())) {
 			handlers.add(new ModelAndViewResolverMethodReturnValueHandler(getModelAndViewResolvers()));
 		}
@@ -775,11 +784,12 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
 
 		ModelAndView mav;
+		// ¼ì²éhttp methodÊÇ·ñÖ§³Ö,sessionÊÇ·ñ±ØĞë
 		checkRequest(request);
 
 		// Execute invokeHandlerMethod in synchronized block if required.
 		if (this.synchronizeOnSession) {
-			// è¿”å›å½“å‰requestä¸­çš„session,è‹¥ä¸å­˜åœ¨åˆ™è¿”å›null[create=false]
+			// ·µ»Øµ±Ç°requestÖĞµÄsession,Èô²»´æÔÚÔò·µ»Ønull[create=false]
 			HttpSession session = request.getSession(false);
 			if (session != null) {
 				Object mutex = WebUtils.getSessionMutex(session);
@@ -849,13 +859,14 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	protected ModelAndView invokeHandlerMethod(HttpServletRequest request,
 			HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
 
+		// 1.Ê¹ÓÃrequest,response´´½¨ÁËServletWebRequest
 		ServletWebRequest webRequest = new ServletWebRequest(request, response);
 		try {
-			// è·å–æ‰€æœ‰æŒ‡å®šControlleré‡ŒåŠ å…¥çš„@InitBinderæ³¨è§£
+			// 2.»ñÈ¡ËùÓĞControllerÀï¼ÓÈëµÄ@InitBinder×¢½â·½·¨¹¤³§Àà
 			WebDataBinderFactory binderFactory = getDataBinderFactory(handlerMethod);
-			// è·å–ç”ŸæˆModelçš„å·¥å‚
+			// 3.»ñÈ¡Éú³ÉModelµÄ¹¤³§
 			ModelFactory modelFactory = getModelFactory(handlerMethod, binderFactory);
-			// æ„é€ ServletInvocableHandlerMethod
+			// 4.¹¹ÔìServletInvocableHandlerMethod
 			ServletInvocableHandlerMethod invocableMethod = createInvocableHandlerMethod(handlerMethod);
 			if (this.argumentResolvers != null) {
 				invocableMethod.setHandlerMethodArgumentResolvers(this.argumentResolvers);
@@ -866,11 +877,15 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			invocableMethod.setDataBinderFactory(binderFactory);
 			invocableMethod.setParameterNameDiscoverer(this.parameterNameDiscoverer);
 
+			// 5.¹¹ÔìModelÈİÆ÷
 			ModelAndViewContainer mavContainer = new ModelAndViewContainer();
+			// FlashMapÊı¾İ±£´æµ½ModelÖĞ
 			mavContainer.addAllAttributes(RequestContextUtils.getInputFlashMap(request));
+			// SessionAttributeºÍModelAttribute²ÎÊı±£´æµ½ModelÖĞ
 			modelFactory.initModel(webRequest, mavContainer, invocableMethod);
 			mavContainer.setIgnoreDefaultModelOnRedirect(this.ignoreDefaultModelOnRedirect);
 
+			// Servlet 3.0 Òì²½ÇëÇóµÄÖ§³Ö
 			AsyncWebRequest asyncWebRequest = WebAsyncUtils.createAsyncWebRequest(request, response);
 			asyncWebRequest.setTimeout(this.asyncRequestTimeout);
 
@@ -890,11 +905,13 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				invocableMethod = invocableMethod.wrapConcurrentResult(result);
 			}
 
+			// 6. Ö´ĞĞHandlerMethod
 			invocableMethod.invokeAndHandle(webRequest, mavContainer);
 			if (asyncManager.isConcurrentHandlingStarted()) {
 				return null;
 			}
 
+			// 7. »ñÈ¡ModelAndView
 			return getModelAndView(mavContainer, modelFactory, webRequest);
 		}
 		finally {
@@ -916,12 +933,13 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		SessionAttributesHandler sessionAttrHandler = getSessionAttributesHandler(handlerMethod);
 		Class<?> handlerType = handlerMethod.getBeanType();
 		Set<Method> methods = this.modelAttributeCache.get(handlerType);
+		// »º´æModelAttribute×¢½âµÄ·½·¨
 		if (methods == null) {
 			methods = MethodIntrospector.selectMethods(handlerType, MODEL_ATTRIBUTE_METHODS);
 			this.modelAttributeCache.put(handlerType, methods);
 		}
 		List<InvocableHandlerMethod> attrMethods = new ArrayList<>();
-		// Global methods first
+		// ÓÅÏÈÌí¼ÓÈ«¾ÖModelAttribute×¢½âµÄ·½·¨£¨ControllerAdviceBean£©
 		this.modelAttributeAdviceCache.forEach((clazz, methodSet) -> {
 			if (clazz.isApplicableToBeanType(handlerType)) {
 				Object bean = clazz.resolveBean();
@@ -934,6 +952,10 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			Object bean = handlerMethod.getBean();
 			attrMethods.add(createModelAttributeMethod(binderFactory, bean, method));
 		}
+		
+		// 1.¿Í»§¶Ë´«µİ°ó¶¨µÄ²ÎÊı
+		// 2.ModelAttribute×¢½âµÄ·½·¨°ó¶¨µÄ²ÎÊı
+		// 3.sessionAttributeÖĞµÄÊı¾İ
 		return new ModelFactory(attrMethods, binderFactory, sessionAttrHandler);
 	}
 
@@ -947,36 +969,39 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		return attrMethod;
 	}
 
-	private WebDataBinderFactory getDataBinderFactory(HandlerMethod handlerMethod) throws Exception {
-		Class<?> handlerType = handlerMethod.getBeanType();
-		Set<Method> methods = this.initBinderCache.get(handlerType);
-		if (methods == null) {
-			methods = MethodIntrospector.selectMethods(handlerType, INIT_BINDER_METHODS);
-			this.initBinderCache.put(handlerType, methods);
-		}
-		List<InvocableHandlerMethod> initBinderMethods = new ArrayList<>();
-		// Global methods first
-		this.initBinderAdviceCache.forEach((clazz, methodSet) -> {
-			if (clazz.isApplicableToBeanType(handlerType)) {
-				Object bean = clazz.resolveBean();
-				for (Method method : methodSet) {
-					initBinderMethods.add(createInitBinderMethod(bean, method));
-				}
-			}
-		});
-		for (Method method : methods) {
-			Object bean = handlerMethod.getBean();
-			initBinderMethods.add(createInitBinderMethod(bean, method));
-		}
-		return createDataBinderFactory(initBinderMethods);
+private WebDataBinderFactory getDataBinderFactory(HandlerMethod handlerMethod) throws Exception {
+	Class<?> handlerType = handlerMethod.getBeanType();
+	Set<Method> methods = this.initBinderCache.get(handlerType);
+	if (methods == null) {
+		methods = MethodIntrospector.selectMethods(handlerType, INIT_BINDER_METHODS);
+		this.initBinderCache.put(handlerType, methods);
 	}
+	List<InvocableHandlerMethod> initBinderMethods = new ArrayList<>();
+	// È«¾ÖinitBinderÓÅÏÈ×¢²á(ControllerAdviceBean)
+	this.initBinderAdviceCache.forEach((clazz, methodSet) -> {
+		if (clazz.isApplicableToBeanType(handlerType)) {
+			Object bean = clazz.resolveBean();
+			for (Method method : methodSet) {
+				initBinderMethods.add(createInitBinderMethod(bean, method));
+			}
+		}
+	});
+	for (Method method : methods) {
+		Object bean = handlerMethod.getBean();
+		initBinderMethods.add(createInitBinderMethod(bean, method));
+	}
+	return createDataBinderFactory(initBinderMethods);
+}
 
 	private InvocableHandlerMethod createInitBinderMethod(Object bean, Method method) {
 		InvocableHandlerMethod binderMethod = new InvocableHandlerMethod(bean, method);
 		if (this.initBinderArgumentResolvers != null) {
 			binderMethod.setHandlerMethodArgumentResolvers(this.initBinderArgumentResolvers);
 		}
+		// ¸ù¾İwebBindingInitializer¹¹ÔìÄ¬ÈÏÊı¾İ°ó¶¨¹¤³§DefaultDataBinderFactory
+		// Ä¬ÈÏwebBindingInitializerÎª¿Õ,¿É×Ô¶¨Òå
 		binderMethod.setDataBinderFactory(new DefaultDataBinderFactory(this.webBindingInitializer));
+		// ÓÃÓÚ»ñÈ¡²ÎÊıÃû
 		binderMethod.setParameterNameDiscoverer(this.parameterNameDiscoverer);
 		return binderMethod;
 	}
@@ -999,15 +1024,20 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	private ModelAndView getModelAndView(ModelAndViewContainer mavContainer,
 			ModelFactory modelFactory, NativeWebRequest webRequest) throws Exception {
 
+		// 1.¸üĞÂModel
 		modelFactory.updateModel(webRequest, mavContainer);
 		if (mavContainer.isRequestHandled()) {
 			return null;
 		}
 		ModelMap model = mavContainer.getModel();
+		
+		// 2.¸ù¾İmavContainer´´½¨ModelAndView
 		ModelAndView mav = new ModelAndView(mavContainer.getViewName(), model, mavContainer.getStatus());
 		if (!mavContainer.isViewReference()) {
 			mav.setView((View) mavContainer.getView());
 		}
+		
+		// 3.Èç¹ûmodelÎªRedirectAttributes,½«Êı¾İ±£´æµ½FlashMapÖĞ
 		if (model instanceof RedirectAttributes) {
 			Map<String, ?> flashAttributes = ((RedirectAttributes) model).getFlashAttributes();
 			HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
