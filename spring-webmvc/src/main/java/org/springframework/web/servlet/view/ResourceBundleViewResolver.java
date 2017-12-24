@@ -211,24 +211,24 @@ public class ResourceBundleViewResolver extends AbstractCachingViewResolver
 	 * @throws BeansException in case of initialization errors
 	 */
 	protected synchronized BeanFactory initFactory(Locale locale) throws BeansException {
-		// Try to find cached factory for Locale:
-		// Have we already encountered that Locale before?
+		// 尝试通过local从缓存中获取BeanFactory
+		// 若缓存中已经存在,则直接返回
 		if (isCache()) {
 			BeanFactory cachedFactory = this.localeCache.get(locale);
 			if (cachedFactory != null) {
 				return cachedFactory;
 			}
 		}
-
-		// Build list of ResourceBundle references for Locale.
+	
+		// 通过ResourceBundle解决国际化和本地化问题
 		List<ResourceBundle> bundles = new LinkedList<>();
+		// basenames可以配置多个,即多个属性文件,所以针对相同的locale会有多个属性文件
 		for (String basename : this.basenames) {
 			ResourceBundle bundle = getBundle(basename, locale);
 			bundles.add(bundle);
 		}
-
-		// Try to find cached factory for ResourceBundle list:
-		// even if Locale was different, same bundles might have been found.
+	
+		// 从缓存中获取cachedFactory
 		if (isCache()) {
 			BeanFactory cachedFactory = this.bundleCache.get(bundles);
 			if (cachedFactory != null) {
@@ -236,27 +236,27 @@ public class ResourceBundleViewResolver extends AbstractCachingViewResolver
 				return cachedFactory;
 			}
 		}
-
-		// Create child ApplicationContext for views.
+	
+		// 创建Spring子容器（ child ApplicationContext）
 		GenericWebApplicationContext factory = new GenericWebApplicationContext();
 		factory.setParent(getApplicationContext());
 		factory.setServletContext(getServletContext());
-
-		// Load bean definitions from resource bundle.
+	
+		// 从配置文件中加载bean 配置,此处的bean代表的View
 		PropertiesBeanDefinitionReader reader = new PropertiesBeanDefinitionReader(factory);
 		reader.setDefaultParentBean(this.defaultParentView);
 		for (ResourceBundle bundle : bundles) {
 			reader.registerBeanDefinitions(bundle);
 		}
-
+	
 		factory.refresh();
-
+	
 		// Cache factory for both Locale and ResourceBundle list.
 		if (isCache()) {
 			this.localeCache.put(locale, factory);
 			this.bundleCache.put(bundles, factory);
 		}
-
+	
 		return factory;
 	}
 

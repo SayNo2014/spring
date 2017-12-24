@@ -132,19 +132,21 @@ public class XmlViewResolver extends AbstractCachingViewResolver
 			return this.cachedFactory;
 		}
 
+		// 获取applicationContext
 		ApplicationContext applicationContext = obtainApplicationContext();
 
+		// 加载xml配置文件
 		Resource actualLocation = this.location;
 		if (actualLocation == null) {
 			actualLocation = applicationContext.getResource(DEFAULT_LOCATION);
 		}
 
-		// Create child ApplicationContext for views.
+		// 创建sub ApplicationContext
 		GenericWebApplicationContext factory = new GenericWebApplicationContext();
 		factory.setParent(applicationContext);
 		factory.setServletContext(getServletContext());
 
-		// Load XML resource with context-aware entity resolver.
+		// 加载xml,初始化bean
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
 		reader.setEnvironment(applicationContext.getEnvironment());
 		reader.setEntityResolver(new ResourceEntityResolver(applicationContext));
