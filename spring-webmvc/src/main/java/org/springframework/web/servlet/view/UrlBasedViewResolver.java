@@ -467,12 +467,11 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	 */
 	@Override
 	protected View createView(String viewName, Locale locale) throws Exception {
-		// If this resolver is not supposed to handle the given view,
-		// return null to pass on to the next resolver in the chain.
+		// 检查是否支持该逻辑视图,若不支持直接返回null
 		if (!canHandle(viewName, locale)) {
 			return null;
 		}
-		// Check for special "redirect:" prefix.
+		// 检查是否为redirect,若为redirect返回RedirectView
 		if (viewName.startsWith(REDIRECT_URL_PREFIX)) {
 			String redirectUrl = viewName.substring(REDIRECT_URL_PREFIX.length());
 			RedirectView view = new RedirectView(redirectUrl, isRedirectContextRelative(), isRedirectHttp10Compatible());
@@ -482,12 +481,12 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 			}
 			return applyLifecycleMethods(viewName, view);
 		}
-		// Check for special "forward:" prefix.
+		// 检查是否为forward,若为forward返回InternalResourceView
 		if (viewName.startsWith(FORWARD_URL_PREFIX)) {
 			String forwardUrl = viewName.substring(FORWARD_URL_PREFIX.length());
 			return new InternalResourceView(forwardUrl);
 		}
-		// Else fall back to superclass implementation: calling loadView.
+		// 若都不符合上述情况,调用父类的createView创建View
 		return super.createView(viewName, locale);
 	}
 
@@ -523,8 +522,11 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	 */
 	@Override
 	protected View loadView(String viewName, Locale locale) throws Exception {
+		// 创建View
 		AbstractUrlBasedView view = buildView(viewName);
+		// 调用applyLifecycleMethods初始化View
 		View result = applyLifecycleMethods(viewName, view);
+		// 校验View模板是否存在,若不存在返回null
 		return (view.checkResource(locale) ? result : null);
 	}
 
@@ -543,28 +545,39 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	 * @see #loadView(String, java.util.Locale)
 	 */
 	protected AbstractUrlBasedView buildView(String viewName) throws Exception {
+		// 获取ViewClass
 		Class<?> viewClass = getViewClass();
 		Assert.state(viewClass != null, "No view class");
 
+		// 通过viewClass构造view实例
 		AbstractUrlBasedView view = (AbstractUrlBasedView) BeanUtils.instantiateClass(viewClass);
+		// 设置url
 		view.setUrl(getPrefix() + viewName + getSuffix());
 
+		// 设置contentType
 		String contentType = getContentType();
 		if (contentType != null) {
 			view.setContentType(contentType);
 		}
 
+		// 设置requestAttribute
 		view.setRequestContextAttribute(getRequestContextAttribute());
+		// 设置staticAttributes
 		view.setAttributesMap(getAttributesMap());
 
+		// 若exposePathVariables不为null,将其值设置到view#exposePathVariables
 		Boolean exposePathVariables = getExposePathVariables();
 		if (exposePathVariables != null) {
 			view.setExposePathVariables(exposePathVariables);
 		}
+		
+		// 若exposeContextBeansAsAttributes不为null,将其值设置到view#exposeContextBeansAsAttributes
 		Boolean exposeContextBeansAsAttributes = getExposeContextBeansAsAttributes();
 		if (exposeContextBeansAsAttributes != null) {
 			view.setExposeContextBeansAsAttributes(exposeContextBeansAsAttributes);
 		}
+		
+		// exposedContextBeanNames不为null,将其值设置到view#exposedContextBeanNames
 		String[] exposedContextBeanNames = getExposedContextBeanNames();
 		if (exposedContextBeanNames != null) {
 			view.setExposedContextBeanNames(exposedContextBeanNames);
